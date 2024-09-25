@@ -1,7 +1,11 @@
-import { Client, Wallet, Payment, xrpToDrops } from "xrpl";
+import { Client, Wallet, AccountSet, AccountSetAsfFlags } from "xrpl";
+import convertStringToHexPadded from "./convertStringToHexPadded"; 
+import createToken from "./createToken";
+
 const client = new Client("wss://s.altnet.rippletest.net:51233");
-const issuer = "sEdVhia4AjRt9PMzqqpxzfBcgrfhq7q";
-const eceiver = "sEdVRrSTFJBNnb51zSMeejttKtjoCuG";
+const issuerSeed = "sEdVhia4AjRt9PMzqqpxzfBcgrfhq7q";
+const receiverSeed = "sEdVRrSTFJBNnb51zSMeejttKtjoCuG";
+
 
 const main = async () => {
   // Connect to the ledger
@@ -9,23 +13,22 @@ const main = async () => {
   console.log("connected");
 
   // Create a wallet
-  const wallet1 = Wallet.fromSeed(issuer);
-  const wallet2 = Wallet.fromSeed(eceiver);
-  //console.log(wallet1, wallet2);
+  const issuer = Wallet.fromSeed(issuerSeed);
+  const receiver = Wallet.fromSeed(receiverSeed);
+  
+  console.log(issuer, receiver);
 
-  const tx: Payment = {
-    TransactionType: "Payment",
-    Account: wallet1.classicAddress,
-    Destination: wallet2.classicAddress,
-    Amount: xrpToDrops("100"),
-  };
 
-  const result = await client.submitAndWait(tx, {
-    autofill: true,
-    wallet: wallet1,
-  });
+  // const accountSet: AccountSet = {
+  //   TransactionType: "AccountSet",
+  //   Account: issuer.address,
+  //   SetFlag: AccountSetAsfFlags.asfDefaultRipple,
+  // };
 
-  console.log(result);
+  // const result = await client.submitAndWait(accountSet, { autofill: true, wallet: issuer });
+  // console.log(result);
+
+  await createToken({ issuer, receiver, client, tokenCode: convertStringToHexPadded("Kayp") });
 
   // Discounect to the ledger
   await client.disconnect();
