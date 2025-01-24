@@ -1,8 +1,8 @@
-import { TrustSet, convertStringToHex, TrustSetFlags, Payment } from "xrpl";
+import { TrustSet, convertStringToHex, TrustSetFlags } from "xrpl";
+import { Payment } from "xrpl/src/models";
 
 async function createToken({ issuer, receiver, client, tokenCode }: any) {
-  
-// create a trustline
+  // Create the trust line to send the token
   const trustSet: TrustSet = {
     TransactionType: "TrustSet",
     Account: receiver.address,
@@ -14,11 +14,16 @@ async function createToken({ issuer, receiver, client, tokenCode }: any) {
     Flags: TrustSetFlags.tfClearNoRipple,
   };
   console.log(trustSet);
-  const result = await client.submitAndWait(trustSet, { autofill: true, wallet: receiver });
-  console.log(result);
 
-  // send the token to the receiver
+  // Receiver opening trust lines
+  const preparedTrust = await client.autofill(trustSet);
+  const signedTrust = receiver.sign(preparedTrust);
+  const resultTrust = await client.submitAndWait(signedTrust.tx_blob);
 
+  console.log(resultTrust);
+  console.log("Trust line issuance tx result: ", resultTrust.result.hash);
+
+  // Send the token to the receiver
   const sendPayment: Payment = {
     TransactionType: "Payment",
     Account: issuer.address,
@@ -29,11 +34,16 @@ async function createToken({ issuer, receiver, client, tokenCode }: any) {
       value: "200000000", // 200M tokens
     },
   };
-
   console.log(sendPayment);
 
-  const resultPayment = await client.submitAndWait(sendPayment, { autofill: true, wallet: issuer });
+  const preparedPayment = await client.autofill(sendPayment);
+  const signedPayment = issuer.sign(preparedPayment);
+  const resultPayment = await client.submitAndWait(signedPayment.tx_blob);
+
   console.log(resultPayment);
+  console.log("Transfer issuance tx result: ", resultPayment.result.hash);
+
+  return;
 }
 
 export default createToken;

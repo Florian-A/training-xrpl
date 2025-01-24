@@ -1,26 +1,8 @@
-import xrpl, { AccountSet, AccountSetAsfFlags } from "xrpl";
+import xrpl from "xrpl";
 import convertStringToHexPadded from "./convertStringToHexPadded";
 import createToken from "./createToken";
-import createAMM from "./createAMM";
 
-const serverURL = "wss://clio.altnet.rippletest.net:51233/"; // Serveur Testnet
-
-async function enableRippling({ wallet, client }: any) {
-  const accountSet: AccountSet = {
-    TransactionType: "AccountSet",
-    Account: wallet.address,
-    SetFlag: AccountSetAsfFlags.asfDefaultRipple,
-  };
-
-  const prepared = await client.autofill(accountSet);
-  const signed = wallet.sign(prepared);
-  const result = await client.submitAndWait(signed.tx_blob);
-
-  console.log(result);
-  console.log("Enable rippling tx: ", result.result.hash);
-
-  return;
-}
+const serverURL = "wss://s.altnet.rippletest.net:51233"; // Serveur Testnet
 
 const main = async () => {
   // Connexion au serveur XRP Ledger
@@ -34,7 +16,7 @@ const main = async () => {
   console.log("Adresse émetteur :", issuerWallet.address);
 
   // Portefeuille récepteur (receiver) basé sur la seed fournie
-  const receiverSeed = "sEdTT7fpC1Pyf3qd2sotHn861e15hkk"; // <---- FREE XRP
+  const receiverSeed = "sEdTT7fpC1Pyf3qd2sotHn861e15hkk"; // < ---- FREE XRP
   const receiverWallet = xrpl.Wallet.fromSeed(receiverSeed);
   console.log("Portefeuille récepteur chargé :");
   console.log("Adresse récepteur :", receiverWallet.address);
@@ -45,27 +27,13 @@ const main = async () => {
   console.log("Portefeuille émetteur financé.");
 
   // Convertir le nom du token en HEX
-  const tokenName = "PIFPAF"; // Remplace par ton nom de token
+  const tokenName = "MYTOKEN"; // Remplace par ton nom de token
   const tokenCodeHex = convertStringToHexPadded(tokenName);
   console.log(`Nom du token : ${tokenName} | Code HEX : ${tokenCodeHex}`);
-
-  await enableRippling({ wallet: issuerWallet, client });
 
   // Appeler la fonction createToken pour créer et transférer les tokens
   console.log("Création et transfert du token...");
   await createToken({
-    issuer: issuerWallet,
-    receiver: receiverWallet,
-    client: client,
-    tokenCode: tokenCodeHex,
-  });
-
-  await new Promise((resolve) => setTimeout(resolve, 5000));
-  
-
-  // Appeler la fonction createAMM pour créer un AMM
-  console.log("Création de l'AMM...");
-  await createAMM({
     issuer: issuerWallet,
     receiver: receiverWallet,
     client: client,

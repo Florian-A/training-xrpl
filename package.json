@@ -5,7 +5,7 @@
     "main": "index.ts",
     "type": "module",
     "scripts": {
-      "wallet": "tsx wallet.ts",
+      "token": "tsx wallet.ts",
       "amm": "tsx amm.ts"
     },
     "author": "",
