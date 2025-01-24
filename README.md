@@ -28,7 +28,11 @@ npm install
 - To start the project, use the following command:
 
 ```
-npm start
+npm wallet
 ```
 
-This will run the main file (src/index.ts) using tsx, which allows executing TypeScript without pre-compilation.
+Or 
+
+```
+npm amm
+```
